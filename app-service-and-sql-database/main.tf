@@ -1,15 +1,16 @@
-provider "azurerm" {
-  features {}
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "2.44.0"
+    }
+  }
 }
 
-  # More information on the authentication methods supported by
-  # the AzureRM Provider can be found here:
-  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
+provider "azurerm" {
+  # Configuration options
+}
 
-  # subscription_id = "..."
-  # client_id       = "..."
-  # client_secret   = "..."
-  # tenant_id       = "..."  
 
 resource "azurerm_resource_group" "example" {
   name     = "database-rg"
