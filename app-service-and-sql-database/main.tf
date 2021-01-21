@@ -1,55 +1,46 @@
-resource "azurerm_resource_group" "RG-Terraform" {
-  name     = "terraform-resource-group"
-  location = "West Europe"
+provider "azurerm" {
+    # The "feature" block is required for AzureRM provider 2.x. 
+    # If you're southing version 1.x, the "features" block is not allowed.
+    version = "~>2.0"
+    features {}
+
+  # More information on the authentication methods supported by
+  # the AzureRM Provider can be found here:
+  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
+
+  # subscription_id = "..."
+  # client_id       = "..."
+  # client_secret   = "..."
+  # tenant_id       = "..."  
 }
 
-resource "azurerm_app_service_plan" "ASP-TerraForm" {
-  name                = "terraform-appserviceplan"
-  location            = azurerm_resource_group.RG-Terraform.location
-  resource_group_name = azurerm_resource_group.RG-Terraform.name
-
-  sku {
-    tier = "Standard"
-    size = "S1"
-  }
+resource "azurerm_resource_group" "example" {
+  name     = "database-rg"
+  location = "West US"
 }
 
-resource "azurerm_app_service" "AS-Terraform" {
-  name                = "app-service-terraform"
-  location            = azurerm_resource_group.RG-Terraform.location
-  resource_group_name = azurerm_resource_group.RG-Terraform.name
-  app_service_plan_id = azurerm_app_service_plan.ASP-TerraForm.id
-
-  site_config {
-    dotnet_framework_version = "v4.0"
-    scm_type                 = "LocalGit"
-  }
-
-  app_settings = {
-    "SOME_KEY" = "some-value"
-  }
-
-  connection_string {
-    name  = "Database"
-    type  = "SQLServer"
-    value = "Server=tcp:${azurerm_sql_server.terraform-sqlserver.fully_qualified_domain_name} Database=${azurerm_sql_database.terraform-sqldatabase.name};User ID=${azurerm_sql_server.terraform-sqlserver.administrator_login};Password=${azurerm_sql_server.terraform-sqlserver.administrator_login_password};Trusted_Connection=False;Encrypt=True;"
-  }
+resource "azurerm_storage_account" "example" {
+  name                     = "examplesa"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 }
 
-resource "azurerm_sql_server" "terraform-sqlserver" {
-  name                         = "terraform-sqlserver"
-  resource_group_name          = azurerm_resource_group.RG-Terraform.name
-  location                     = azurerm_resource_group.RG-Terraform.location
+resource "azurerm_sql_server" "example" {
+  name                         = "mssqlserver"
+  resource_group_name          = azurerm_resource_group.example.name
+  location                     = azurerm_resource_group.example.location
   version                      = "12.0"
-  administrator_login          = "houssem"
-  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
-}
+  administrator_login          = "mradministrator"
+  administrator_login_password = "thisIsDog11"
 
-resource "azurerm_sql_database" "terraform-sqldatabase" {
-  name                = "terraform-sqldatabase"
-  resource_group_name = azurerm_resource_group.RG-Terraform.name
-  location            = azurerm_resource_group.RG-Terraform.location
-  server_name         = azurerm_sql_server.terraform-sqlserver.name
+  extended_auditing_policy {
+    storage_endpoint                        = azurerm_storage_account.example.primary_blob_endpoint
+    storage_account_access_key              = azurerm_storage_account.example.primary_access_key
+    storage_account_access_key_is_secondary = true
+    retention_in_days                       = 6
+  }
 
   tags = {
     environment = "production"
