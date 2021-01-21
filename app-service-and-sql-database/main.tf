@@ -10,7 +10,6 @@ provider "azurerm" {
   # client_id       = "..."
   # client_secret   = "..."
   # tenant_id       = "..."  
-}
 
 resource "azurerm_resource_group" "example" {
   name     = "database-rg"
