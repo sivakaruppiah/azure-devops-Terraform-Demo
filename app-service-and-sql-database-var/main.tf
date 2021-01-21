@@ -15,14 +15,6 @@ provider "azurerm" {
 }
 
 
-
-  connection_string {
-    name  = "Database"
-    type  = "SQLServer"
-    value = "Server=tcp:${azurerm_sql_server.test.fully_qualified_domain_name} Database=${azurerm_sql_database.test.name};User ID=${azurerm_sql_server.test.administrator_login};Password=${azurerm_sql_server.test.administrator_login_password};Trusted_Connection=False;Encrypt=True;"
-  }
-}
-
 resource "azurerm_sql_server" "test" {
   name                         = "terraform-sqlserver-azuredevops"
   resource_group_name          = azurerm_resource_group.RG-Terraform.name
@@ -32,13 +24,3 @@ resource "azurerm_sql_server" "test" {
   administrator_login_password = "4-v3ry-53cr37-p455w0rd"
 }
 
-resource "azurerm_sql_database" "test" {
-  name                = "terraform-sqldatabase"
-  resource_group_name = azurerm_resource_group.RG-Terraform.name
-  location            = azurerm_resource_group.RG-Terraform.location
-  server_name         = azurerm_sql_server.test.name
-
-  tags = {
-    environment = "production"
-  }
-}
